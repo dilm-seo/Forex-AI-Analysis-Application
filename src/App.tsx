@@ -55,7 +55,7 @@ function App() {
               1. A market summary
               2. Currency pair analysis (identify major pairs affected and their sentiment)
               3. Trading signals with detailed reasons
-              Focus on currency implications and market movements. Response format:
+              Focus on currency implications and market movements. Write in french. Response format:
               {
                 "summary": "Brief market overview",
                 "currencies": [
