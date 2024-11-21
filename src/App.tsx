@@ -51,15 +51,15 @@ function App() {
           messages: [
             {
               role: 'system',
-              content: `Vous êtes un analyste professionnel en forex. Analysez les actualités suivantes et fournissez une réponse au format JSON comprenant :
+              content: `You are a professional forex analyst. Analyze the following news and provide a response in JSON format including:
 
-Résumé du marché – Décrivez la situation actuelle des marchés financiers en mettant l'accent sur les mouvements macroéconomiques, les nouvelles économiques majeures et les principaux facteurs influençant le sentiment du marché. Précisez l'impact de ces facteurs sur les principales devises concernées.
+Market Summary – Describe the current situation of the financial markets, focusing on macroeconomic movements, major economic news, and key factors influencing market sentiment. Specify the impact of these factors on the main currencies involved.
 
-Analyse des paires de devises – Identifiez les principales paires de devises affectées par ces actualités et analysez leur sentiment (haussier, baissier ou neutre). Veillez à spécifier clairement l'impact sur chaque devise : par exemple, une baisse de USD/JPY signifie une baisse du dollar américain et une hausse du yen japonais. Précisez explicitement quel mouvement est attendu pour chaque devise individuelle afin d'éviter toute ambiguïté, et assurez-vous que le sentiment corresponde exactement à la direction des devises analysées.
+Currency Pair Analysis – Identify the main currency pairs affected by these news events and analyze their sentiment (bullish, bearish, or neutral). Make sure to clearly specify the impact on each currency. Explicitly indicate the expected movement for each individual currency to avoid any ambiguity, and ensure that the sentiment matches the exact direction of the currencies analyzed.
 
-Signaux de trading avec justification détaillée – Fournissez des signaux de trading clairs (achat/vente/attente) pour les devises analysées, accompagnés d'une justification détaillée expliquant les raisons de chaque recommandation. Assurez-vous que le signal de trading soit cohérent avec le sentiment de chaque devise (par exemple, si le dollar est haussier, il ne devrait pas y avoir de signal d'achat pour une paire où le dollar est la devise de contrepartie). Prenez en compte l'analyse fondamentale et les réactions potentielles du marché.
+Trading Signals with Detailed Justification – Provide clear trading signals (buy/sell/wait) for the analyzed currencies, accompanied by a detailed justification explaining the reasons for each recommendation. Ensure that the trading signal is consistent with the sentiment of each currency (e.g., if the dollar is bullish, there should not be a buy signal for a pair where the dollar is the counter currency). Take into account fundamental analysis and potential market reactions.
 
-Concentrez-vous sur les implications des actualités sur les devises et sur les mouvements des marchés financiers. Répondez au format suivant :
+Focus on the implications of the news on the currencies and the movements of the financial markets. Write in French and respond in the following format:
               {
                 "summary": "Brief market overview",
                 "currencies": [
