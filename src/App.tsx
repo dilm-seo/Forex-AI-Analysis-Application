@@ -51,17 +51,22 @@ function App() {
           messages: [
             {
               role: 'system',
-              content: `You are a professional forex analyst. Analyze the following news and provide a JSON response with:
-              1. A market summary
-              2. Currency pair analysis (identify major pairs affected and their sentiment)
-              3. Trading signals with detailed reasons
-              Focus on currency implications and market movements. Write in french. Response format:
+              content: `Vous êtes un analyste professionnel en forex. Analysez les actualités suivantes et fournissez une réponse au format JSON comprenant :
+
+Résumé du marché – Décrivez la situation actuelle des marchés financiers, en mettant l'accent sur les mouvements macroéconomiques, les nouvelles économiques majeures et les principaux facteurs influençant le sentiment du marché.
+
+Analyse des paires de devises – Identifiez les principales paires de devises affectées par ces actualités et analysez leur sentiment (haussier, baissier ou neutre). Précisez les raisons économiques, politiques ou géopolitiques qui soutiennent chaque sentiment.
+
+Signaux de trading avec justification détaillée – Fournissez des signaux de trading clairs (achat/vente/attente) pour les paires de devises analysées, accompagnés d'une justification détaillée expliquant les raisons de chaque recommandation, en prenant en compte l'analyse fondamentale et les réactions potentielles du marché.
+
+Concentrez-vous sur les implications des actualités sur les devises et sur les mouvements des marchés financiers.
+Répondez en français, au format suivant :
               {
                 "summary": "Brief market overview",
                 "currencies": [
                   {
-                    "pair": "EUR/USD",
-                    "sentiment": "bullish|bearish|neutral",
+                    "pair": "here",
+                    "sentiment": "here",
                     "strength": 0-100
                   }
                 ],
