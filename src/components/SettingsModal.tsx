@@ -75,8 +75,8 @@ export default function SettingsModal({ isOpen, onClose, onSave }: SettingsModal
               onChange={(e) => setSettings({ ...settings, language: e.target.value })}
               className="w-full p-3 border border-blue-700/50 rounded-xl bg-blue-800/50 text-blue-100 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
             >
-              <option value="en">English</option>
               <option value="fr">Français</option>
+              <option value="en">Anglais</option>
               <option value="es">Español</option>
             </select>
           </div>
