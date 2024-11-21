@@ -64,19 +64,19 @@ Concentrez-vous sur les implications des actualités sur les devises et sur les 
                 "summary": "Brief market overview",
                 "currencies": [
                   {
-                    "devise": "eur|usd|cad|gbp|aud",
-                    "sentiment": "down|up",
+                    "pair": "EUR/USD",
+                    "sentiment": "bullish|bearish|neutral",
                     "strength": 0-100
                   }
                 ],
                 "signals": [
                   {
-                    "devise": "eur|usd|cad|gbp|aud",
-                    "type": "down|up",
-                    "timeframe": "scalping|day",
+                    "pair": "EUR/USD",
+                    "type": "buy|sell",
+                    "timeframe": "scalping|day trading",
                     "strength": 0-100,
                     "impact": "high|medium|low",
-                    "reasons": ["reason1", "reason2", "reason3"]
+                    "reasons": ["reason1", "reason2"]
                   }
                 ]
               }
