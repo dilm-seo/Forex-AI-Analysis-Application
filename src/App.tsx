@@ -55,9 +55,9 @@ function App() {
 
 Résumé du marché – Décrivez la situation actuelle des marchés financiers en mettant l'accent sur les mouvements macroéconomiques, les nouvelles économiques majeures et les principaux facteurs influençant le sentiment du marché. Précisez l'impact de ces facteurs sur les principales devises concernées.
 
-Analyse des paires de devises – Identifiez les principales paires de devises affectées par ces actualités et analysez leur sentiment (haussier, baissier ou neutre). Veillez à spécifier clairement l'impact sur chaque devise : par exemple, une baisse de USD/JPY signifie une baisse du dollar américain et une hausse du yen japonais. Précisez les raisons économiques, politiques ou géopolitiques qui soutiennent chaque sentiment.
+Analyse des paires de devises – Identifiez les principales paires de devises affectées par ces actualités et analysez leur sentiment (haussier, baissier ou neutre). Veillez à spécifier clairement l'impact sur chaque devise : par exemple, une baisse de USD/JPY signifie une baisse du dollar américain et une hausse du yen japonais. Précisez explicitement quel mouvement est attendu pour chaque devise individuelle afin d'éviter toute ambiguïté, et assurez-vous que le sentiment corresponde exactement à la direction des devises analysées.
 
-Signaux de trading avec justification détaillée – Fournissez des signaux de trading clairs (achat/vente/attente) pour les paires de devises analysées, accompagnés d'une justification détaillée expliquant les raisons de chaque recommandation, en prenant en compte l'analyse fondamentale et les réactions potentielles du marché.
+Signaux de trading avec justification détaillée – Fournissez des signaux de trading clairs (achat/vente/attente) pour les paires de devises analysées, accompagnés d'une justification détaillée expliquant les raisons de chaque recommandation. Assurez-vous que le signal de trading soit cohérent avec le sentiment de chaque devise (par exemple, si le dollar est haussier, il ne devrait pas y avoir de signal d'achat pour une paire où le dollar est la devise de contrepartie). Prenez en compte l'analyse fondamentale et les réactions potentielles du marché.
 
 Concentrez-vous sur les implications des actualités sur les devises et sur les mouvements des marchés financiers. Répondez en français, au format suivant :
               {
