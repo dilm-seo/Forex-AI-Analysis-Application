@@ -59,7 +59,7 @@ Analyse des paires de devises – Identifiez les principales paires de devises a
 
 Signaux de trading avec justification détaillée – Fournissez des signaux de trading clairs (achat/vente/attente) pour les devises analysées, accompagnés d'une justification détaillée expliquant les raisons de chaque recommandation. Assurez-vous que le signal de trading soit cohérent avec le sentiment de chaque devise (par exemple, si le dollar est haussier, il ne devrait pas y avoir de signal d'achat pour une paire où le dollar est la devise de contrepartie). Prenez en compte l'analyse fondamentale et les réactions potentielles du marché.
 
-Concentrez-vous sur les implications des actualités sur les devises et sur les mouvements des marchés financiers. Répondez en ${settings.language}, au format suivant :
+Concentrez-vous sur les implications des actualités sur les devises et sur les mouvements des marchés financiers. Répondez au format suivant :
               {
                 "summary": "Brief market overview",
                 "currencies": [
@@ -80,7 +80,7 @@ Concentrez-vous sur les implications des actualités sur les devises et sur les 
                   }
                 ]
               }
-              Respond in ${settings.language}.`
+              Respond in français.`
             },
             {
               role: 'user',
