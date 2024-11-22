@@ -14,8 +14,8 @@ export const loadSettings = () => {
   const settings = localStorage.getItem(STORAGE_KEY);
   return settings ? JSON.parse(settings) : {
     apiKey: '',
-    language: 'fr',
-    newsCount: 20,
+    language: 'en',
+    newsCount: 5,
     model: 'gpt-4-turbo-preview',
     feedUrl: 'https://www.forexlive.com/feed/news/'
   };

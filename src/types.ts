@@ -5,23 +5,16 @@ export interface NewsItem {
   link: string;
 }
 
-export interface TradingSignal {
-  pair: string;
-  type: 'buy' | 'sell';
-  timeframe: 'scalping' | 'day';
+export interface CurrencyStrength {
+  currency: string;
   strength: number;
-  reasons: string[];
-  impact: 'high' | 'medium' | 'low';
+  trend: 'up' | 'down' | 'neutral';
 }
 
-export interface Analysis {
-  summary: string;
-  currencies: {
-    pair: string;
-    sentiment: 'bullish' | 'bearish' | 'neutral';
-    strength: number;
-  }[];
-  signals: TradingSignal[];
+export interface CurrencyCorrelation {
+  pair: string;
+  correlation: number;
+  explanation: string;
 }
 
 export interface Settings {
@@ -29,5 +22,12 @@ export interface Settings {
   language: 'en' | 'fr' | 'es';
   newsCount: number;
   model: 'gpt-4-turbo-preview' | 'gpt-4' | 'gpt-3.5-turbo';
-  feedUrl: string;
+}
+
+export interface Analysis {
+  summary: string;
+  scalping: string;
+  dayTrading: string;
+  currencies: CurrencyStrength[];
+  correlations: CurrencyCorrelation[];
 }
