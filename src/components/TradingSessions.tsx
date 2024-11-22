@@ -11,11 +11,13 @@ interface Session {
     name: string;
     volatility: 'high' | 'medium' | 'low';
     recommendation: 'buy' | 'sell' | 'neutral';
+    reason: string;
   }>;
   volatility: 'high' | 'medium' | 'low';
   overlap?: string;
   icon: 'sun' | 'moon';
   color: string;
+  description: string;
 }
 
 export default function TradingSessions() {
@@ -38,10 +40,26 @@ export default function TradingSessions() {
         volume: 4,
         volatility: 'low',
         overlap: 'Tokyo (23:00-06:00)',
+        description: 'Ouverture des marchés asiatiques. Focus sur AUD et NZD avec des mouvements modérés.',
         pairs: [
-          { name: 'AUD/USD', volatility: 'high', recommendation: 'buy' },
-          { name: 'NZD/USD', volatility: 'medium', recommendation: 'neutral' },
-          { name: 'AUD/JPY', volatility: 'medium', recommendation: 'sell' }
+          { 
+            name: 'AUD/USD', 
+            volatility: 'high', 
+            recommendation: 'buy',
+            reason: 'Données économiques australiennes et sentiment asiatique'
+          },
+          { 
+            name: 'NZD/USD', 
+            volatility: 'medium', 
+            recommendation: 'neutral',
+            reason: 'Corrélation avec AUD et marchés asiatiques'
+          },
+          { 
+            name: 'AUD/JPY', 
+            volatility: 'medium', 
+            recommendation: 'sell',
+            reason: 'Sensibilité au risque pendant les heures asiatiques'
+          }
         ],
         status: (hour >= 21 || hour < 6) ? 'active' : 'closed',
         icon: 'moon',
@@ -54,10 +72,26 @@ export default function TradingSessions() {
         volume: 8,
         volatility: 'medium',
         overlap: 'Londres (08:00-09:00)',
+        description: 'Session majeure asiatique. JPY dominant avec influence sur les crosses asiatiques.',
         pairs: [
-          { name: 'USD/JPY', volatility: 'high', recommendation: 'buy' },
-          { name: 'EUR/JPY', volatility: 'high', recommendation: 'sell' },
-          { name: 'GBP/JPY', volatility: 'medium', recommendation: 'neutral' }
+          { 
+            name: 'USD/JPY', 
+            volatility: 'high', 
+            recommendation: 'buy',
+            reason: 'Activité bancaire japonaise et flux institutionnels'
+          },
+          { 
+            name: 'EUR/JPY', 
+            volatility: 'high', 
+            recommendation: 'sell',
+            reason: 'Sensibilité aux données européennes matinales'
+          },
+          { 
+            name: 'GBP/JPY', 
+            volatility: 'medium', 
+            recommendation: 'neutral',
+            reason: 'Volatilité accrue pendant le chevauchement Londres'
+          }
         ],
         status: (hour >= 23 || hour < 8) ? 'active' : 'closed',
         icon: 'moon',
@@ -70,10 +104,26 @@ export default function TradingSessions() {
         volume: 35,
         volatility: 'high',
         overlap: 'New York (13:00-17:00)',
+        description: 'Session la plus active. Forte liquidité et mouvements majeurs sur EUR et GBP.',
         pairs: [
-          { name: 'EUR/USD', volatility: 'high', recommendation: 'buy' },
-          { name: 'GBP/USD', volatility: 'high', recommendation: 'sell' },
-          { name: 'EUR/GBP', volatility: 'medium', recommendation: 'neutral' }
+          { 
+            name: 'EUR/USD', 
+            volatility: 'high', 
+            recommendation: 'buy',
+            reason: 'Maximum de liquidité et activité institutionnelle'
+          },
+          { 
+            name: 'GBP/USD', 
+            volatility: 'high', 
+            recommendation: 'sell',
+            reason: 'Réaction aux données économiques UK et EUR'
+          },
+          { 
+            name: 'EUR/GBP', 
+            volatility: 'medium', 
+            recommendation: 'neutral',
+            reason: 'Dynamique entre économies européennes'
+          }
         ],
         status: (hour >= 8 && hour < 17) ? 'active' : 'closed',
         icon: 'sun',
@@ -86,10 +136,26 @@ export default function TradingSessions() {
         volume: 28,
         volatility: 'high',
         overlap: 'Londres (13:00-17:00)',
+        description: 'Forte influence USD. Réactions importantes aux données US et flux de fin de journée.',
         pairs: [
-          { name: 'EUR/USD', volatility: 'high', recommendation: 'sell' },
-          { name: 'USD/CAD', volatility: 'medium', recommendation: 'buy' },
-          { name: 'USD/CHF', volatility: 'medium', recommendation: 'neutral' }
+          { 
+            name: 'EUR/USD', 
+            volatility: 'high', 
+            recommendation: 'sell',
+            reason: 'Impact maximal des données économiques US'
+          },
+          { 
+            name: 'USD/CAD', 
+            volatility: 'medium', 
+            recommendation: 'buy',
+            reason: 'Corrélation avec le pétrole et économie US'
+          },
+          { 
+            name: 'USD/CHF', 
+            volatility: 'medium', 
+            recommendation: 'neutral',
+            reason: 'Refuge pendant la volatilité US'
+          }
         ],
         status: (hour >= 13 && hour < 22) ? 'active' : 'closed',
         icon: 'sun',
@@ -195,7 +261,11 @@ export default function TradingSessions() {
               </div>
             </div>
 
-            <div className="grid gap-4">
+            <div className="mt-3 text-sm text-blue-200 leading-relaxed">
+              {session.description}
+            </div>
+
+            <div className="grid gap-4 mt-4">
               <div>
                 <div className="text-sm font-medium text-blue-300 mb-2">
                   Volume & Volatilité
@@ -253,36 +323,39 @@ export default function TradingSessions() {
                       {session.pairs.map((pair) => (
                         <div
                           key={pair.name}
-                          className="flex items-center justify-between bg-blue-800/30 p-3 rounded-lg border border-blue-700/30"
+                          className="bg-blue-800/30 p-3 rounded-lg border border-blue-700/30 space-y-2"
                         >
-                          <div className="flex items-center space-x-3">
-                            <span className="font-mono">{pair.name}</span>
-                            <span className={`px-2 py-1 rounded-md text-xs ${
-                              pair.volatility === 'high'
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <span className="font-mono">{pair.name}</span>
+                              <span className={`px-2 py-1 rounded-md text-xs ${
+                                pair.volatility === 'high'
+                                  ? 'bg-red-500/20 text-red-300'
+                                  : pair.volatility === 'medium'
+                                  ? 'bg-yellow-500/20 text-yellow-300'
+                                  : 'bg-green-500/20 text-green-300'
+                              }`}>
+                                Vol. {
+                                  pair.volatility === 'high' ? 'Haute' :
+                                  pair.volatility === 'medium' ? 'Moyenne' : 'Basse'
+                                }
+                              </span>
+                            </div>
+                            <div className={`flex items-center space-x-1 px-2 py-1 rounded-md text-xs ${
+                              pair.recommendation === 'buy'
+                                ? 'bg-green-500/20 text-green-300'
+                                : pair.recommendation === 'sell'
                                 ? 'bg-red-500/20 text-red-300'
-                                : pair.volatility === 'medium'
-                                ? 'bg-yellow-500/20 text-yellow-300'
-                                : 'bg-green-500/20 text-green-300'
+                                : 'bg-gray-500/20 text-gray-300'
                             }`}>
-                              Vol. {
-                                pair.volatility === 'high' ? 'Haute' :
-                                pair.volatility === 'medium' ? 'Moyenne' : 'Basse'
-                              }
-                            </span>
+                              <TrendingUp size={14} />
+                              <span>
+                                {pair.recommendation === 'buy' ? 'Achat' :
+                                 pair.recommendation === 'sell' ? 'Vente' : 'Neutre'}
+                              </span>
+                            </div>
                           </div>
-                          <div className={`flex items-center space-x-1 px-2 py-1 rounded-md text-xs ${
-                            pair.recommendation === 'buy'
-                              ? 'bg-green-500/20 text-green-300'
-                              : pair.recommendation === 'sell'
-                              ? 'bg-red-500/20 text-red-300'
-                              : 'bg-gray-500/20 text-gray-300'
-                          }`}>
-                            <TrendingUp size={14} />
-                            <span>
-                              {pair.recommendation === 'buy' ? 'Achat' :
-                               pair.recommendation === 'sell' ? 'Vente' : 'Neutre'}
-                            </span>
-                          </div>
+                          <p className="text-xs text-blue-200">{pair.reason}</p>
                         </div>
                       ))}
                     </div>

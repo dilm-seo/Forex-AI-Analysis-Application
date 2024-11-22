@@ -1,31 +1,13 @@
 import React, { useState } from 'react';
 import { Compass, TrendingUp, TrendingDown, AlertTriangle, ChevronDown, ChevronUp, Target } from 'lucide-react';
-import type { CurrencyStrength } from '../types';
+import type { TradingOpportunity } from '../types';
 
 interface CompassCardProps {
-  currencies: CurrencyStrength[];
+  opportunities: TradingOpportunity[];
 }
 
-interface TradingOpportunity {
-  pair: string;
-  type: 'buy' | 'sell';
-  strength: number;
-  reasoning: string;
-}
-
-export default function CompassCard({ currencies }: CompassCardProps) {
+export default function CompassCard({ opportunities }: CompassCardProps) {
   const [expandedOpportunity, setExpandedOpportunity] = useState<number | null>(null);
-
-  // Generate trading opportunities based on currency strengths
-  const opportunities: TradingOpportunity[] = currencies
-    .sort((a, b) => b.strength - a.strength)
-    .slice(0, 3)
-    .map((currency) => ({
-      pair: `${currency.currency}/USD`,
-      type: currency.trend === 'up' ? 'buy' : 'sell',
-      strength: currency.strength,
-      reasoning: `Strong ${currency.trend === 'up' ? 'bullish' : 'bearish'} momentum detected for ${currency.currency} with ${currency.strength}% strength indicator.`
-    }));
 
   return (
     <div className="relative overflow-hidden">
@@ -38,8 +20,8 @@ export default function CompassCard({ currencies }: CompassCardProps) {
               <Compass className="text-blue-200 h-8 w-8" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white">Trading Compass</h2>
-              <p className="text-blue-200 text-sm mt-1">AI-Detected Opportunities</p>
+              <h2 className="text-2xl font-bold text-white">Boussole de Trading</h2>
+              <p className="text-blue-200 text-sm mt-1">Opportunités Détectées par IA</p>
             </div>
           </div>
           
@@ -71,7 +53,17 @@ export default function CompassCard({ currencies }: CompassCardProps) {
                           <div className="flex items-center space-x-2 mt-2">
                             <Target className="h-4 w-4 text-blue-300" />
                             <span className="text-sm text-blue-200">
-                              {opportunity.type === 'buy' ? 'Long Position' : 'Short Position'}
+                              {opportunity.type === 'buy' ? 'Position Longue' : 'Position Courte'}
+                            </span>
+                            <span className={`px-2 py-1 rounded-md text-xs ${
+                              opportunity.timeframe === 'court' 
+                                ? 'bg-purple-500/20 text-purple-300'
+                                : opportunity.timeframe === 'moyen'
+                                ? 'bg-blue-500/20 text-blue-300'
+                                : 'bg-green-500/20 text-green-300'
+                            }`}>
+                              {opportunity.timeframe === 'court' ? 'Court Terme' :
+                               opportunity.timeframe === 'moyen' ? 'Moyen Terme' : 'Long Terme'}
                             </span>
                           </div>
                         </div>
@@ -80,7 +72,7 @@ export default function CompassCard({ currencies }: CompassCardProps) {
                       <div className="flex items-center space-x-3">
                         <div className="text-right">
                           <div className="text-sm font-medium text-blue-200">
-                            Signal Strength
+                            Force du Signal
                           </div>
                           <div className="text-2xl font-bold text-white">
                             {opportunity.strength}%
@@ -103,19 +95,44 @@ export default function CompassCard({ currencies }: CompassCardProps) {
                         <AlertTriangle className="text-yellow-300 h-5 w-5 flex-shrink-0 mt-1" />
                         <div>
                           <h4 className="text-sm font-medium text-yellow-200 mb-2">
-                            Key Analysis Points
+                            Points d'Analyse Clés
                           </h4>
-                          <p className="text-blue-100 leading-relaxed">
-                            {opportunity.reasoning}
-                          </p>
+                          <ul className="space-y-2">
+                            {opportunity.reasoning.map((reason, idx) => (
+                              <li key={idx} className="text-blue-100 leading-relaxed flex items-start space-x-2">
+                                <span className="text-blue-300 mt-1">•</span>
+                                <span>{reason}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-blue-800/30 p-3 rounded-lg border border-blue-700/30">
+                          <div className="text-sm font-medium text-blue-300 mb-1">Stop Loss</div>
+                          <div className="text-lg font-mono text-white">{opportunity.stopLoss}</div>
+                        </div>
+                        <div className="bg-blue-800/30 p-3 rounded-lg border border-blue-700/30">
+                          <div className="text-sm font-medium text-blue-300 mb-1">Target</div>
+                          <div className="text-lg font-mono text-white">{opportunity.target}</div>
                         </div>
                       </div>
                       
-                      <div className="pt-4 border-t border-white/10">
+                      <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                        <div className={`px-3 py-1 rounded-lg text-xs font-medium ${
+                          opportunity.risk === 'faible'
+                            ? 'bg-green-500/20 text-green-300'
+                            : opportunity.risk === 'modéré'
+                            ? 'bg-yellow-500/20 text-yellow-300'
+                            : 'bg-red-500/20 text-red-300'
+                        }`}>
+                          Risque {opportunity.risk}
+                        </div>
                         <div className="flex items-center space-x-2">
                           <AlertTriangle className="text-yellow-300 h-4 w-4" />
                           <span className="text-sm text-yellow-200">
-                            This analysis is AI-generated. Always validate with your own analysis.
+                            Validez avec votre propre analyse
                           </span>
                         </div>
                       </div>

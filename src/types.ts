@@ -9,12 +9,38 @@ export interface CurrencyStrength {
   currency: string;
   strength: number;
   trend: 'up' | 'down' | 'neutral';
+  factors: string[];
+}
+
+export interface TradingOpportunity {
+  pair: string;
+  type: 'buy' | 'sell';
+  timeframe: 'court' | 'moyen' | 'long';
+  strength: number;
+  reasoning: string[];
+  risk: 'faible' | 'modéré' | 'élevé';
+  stopLoss: number;
+  target: number;
 }
 
 export interface CurrencyCorrelation {
   pair: string;
   correlation: number;
   explanation: string;
+  factors: string[];
+}
+
+export interface MarketSentiment {
+  overall: 'risk-on' | 'risk-off' | 'neutral';
+  confidence: number;
+  drivers: string[];
+}
+
+export interface Analysis {
+  currencies: CurrencyStrength[];
+  opportunities: TradingOpportunity[];
+  correlations: CurrencyCorrelation[];
+  marketSentiment: MarketSentiment;
 }
 
 export interface Settings {
@@ -27,30 +53,4 @@ export interface Settings {
   timeframe: '1h' | '4h' | '1d';
   alertsEnabled: boolean;
   favoritesPairs: string[];
-}
-
-export interface Analysis {
-  summary: string;
-  currencies: CurrencyStrength[];
-  scalping: string;
-  dayTrading: string;
-  correlations: CurrencyCorrelation[];
-  keyLevels?: {
-    pair: string;
-    support: number[];
-    resistance: number[];
-  }[];
-  marketSentiment?: {
-    overall: 'bullish' | 'bearish' | 'neutral';
-    confidence: number;
-    factors: string[];
-  };
-  technicalIndicators?: {
-    pair: string;
-    indicators: {
-      name: string;
-      value: number;
-      signal: 'buy' | 'sell' | 'neutral';
-    }[];
-  }[];
 }
