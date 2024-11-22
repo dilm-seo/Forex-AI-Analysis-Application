@@ -11,6 +11,7 @@ import CompassCard from './components/CompassCard';
 import TechnicalIndicators from './components/TechnicalIndicators';
 import KeyLevels from './components/KeyLevels';
 import MarketSentiment from './components/MarketSentiment';
+import TradingSessions from './components/TradingSessions';
 import { loadSettings } from './utils/storage';
 import type { NewsItem, Analysis, Settings as SettingsType } from './types';
 
@@ -37,13 +38,13 @@ export default function App() {
       
       setNews(newsItems);
     } catch (error) {
-      toast.error('Échec du chargement des actualités');
+      toast.error('Failed to load news');
     }
   };
 
   const analyzeNews = async () => {
     if (!settings.apiKey) {
-      toast.error('Veuillez configurer votre clé API OpenAI');
+      toast.error('Please configure your OpenAI API key');
       setShowSettings(true);
       return;
     }
@@ -57,19 +58,19 @@ export default function App() {
           messages: [
             {
               role: 'system',
-              content: `Vous êtes un analyste forex professionnel. Analysez les actualités suivantes et fournissez:
-              1. Un résumé du marché
-              2. Une analyse de la force des devises majeures (USD, EUR, GBP, JPY, AUD, CAD, CHF, NZD) avec pourcentage de force (0-100) et tendance (up/down/neutral)
-              3. Une opportunité de scalping avec raisonnement détaillé
-              4. Une opportunité de day trading avec raisonnement détaillé
-              5. Les corrélations entre les devises les plus fortes et les plus faibles avec explications
-              6. Les niveaux clés de support et résistance
-              7. Les indicateurs techniques principaux
-              8. Le sentiment général du marché
+              content: `You are a professional forex analyst. Analyze the following news and provide:
+              1. A market summary
+              2. Analysis of major currency strengths (USD, EUR, GBP, JPY, AUD, CAD, CHF, NZD) with strength percentage (0-100) and trend (up/down/neutral)
+              3. A scalping opportunity with detailed reasoning
+              4. A day trading opportunity with detailed reasoning
+              5. Correlations between strongest and weakest currencies with explanations
+              6. Key support and resistance levels
+              7. Main technical indicators
+              8. Overall market sentiment
               
-              Formatez la réponse en JSON:
+              Format the response in JSON:
               {
-                "summary": "Aperçu du marché...",
+                "summary": "Market overview...",
                 "currencies": [
                   {
                     "currency": "USD",
@@ -77,13 +78,13 @@ export default function App() {
                     "trend": "up"
                   }
                 ],
-                "scalping": "Analyse détaillée pour le scalping...",
-                "dayTrading": "Analyse détaillée pour le day trading...",
+                "scalping": "Detailed scalping analysis...",
+                "dayTrading": "Detailed day trading analysis...",
                 "correlations": [
                   {
                     "pair": "EUR/USD",
                     "correlation": 0.85,
-                    "explanation": "Forte corrélation négative due à..."
+                    "explanation": "Strong negative correlation due to..."
                   }
                 ],
                 "keyLevels": [
@@ -109,8 +110,8 @@ export default function App() {
                   "overall": "bullish",
                   "confidence": 75,
                   "factors": [
-                    "Forte croissance économique",
-                    "Politique monétaire accommodante"
+                    "Strong economic growth",
+                    "Accommodative monetary policy"
                   ]
                 }
               }`
@@ -132,7 +133,7 @@ export default function App() {
       const result = JSON.parse(response.data.choices[0].message.content);
       setAnalysis(result);
     } catch (error) {
-      toast.error('L\'analyse a échoué. Vérifiez votre clé API.');
+      toast.error('Analysis failed. Check your API key.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -163,7 +164,7 @@ export default function App() {
                 className="flex items-center px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 <RefreshCw size={20} className={`mr-2 ${isAnalyzing ? 'animate-spin' : ''}`} />
-                Analyser le Feed
+                Analyze Feed
               </button>
             </div>
           </div>
@@ -171,32 +172,40 @@ export default function App() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <TradingSessions />
+          {analysis?.marketSentiment && (
+            <MarketSentiment sentiment={analysis.marketSentiment} />
+          )}
+        </div>
+
         {analysis && (
           <>
             <AnalysisCard analysis={analysis} />
             
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-gray-800">Force des Devises</h2>
+              <h2 className="text-xl font-semibold text-gray-800">Currency Strength</h2>
               <CurrencyStrengthMeter currencies={analysis.currencies} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <CompassCard currencies={analysis.currencies} />
-              <MarketSentiment sentiment={analysis.marketSentiment!} />
+              {analysis.keyLevels && <KeyLevels levels={analysis.keyLevels} />}
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-gray-800">Corrélations</h2>
+              <h2 className="text-xl font-semibold text-gray-800">Correlations</h2>
               <CurrencyCorrelations correlations={analysis.correlations} />
             </div>
 
-            <KeyLevels levels={analysis.keyLevels!} />
-            <TechnicalIndicators indicators={analysis.technicalIndicators!} />
+            {analysis.technicalIndicators && (
+              <TechnicalIndicators indicators={analysis.technicalIndicators} />
+            )}
           </>
         )}
         
         <div className="space-y-6">
-          <h2 className="text-xl font-semibold text-gray-800">Dernières Actualités</h2>
+          <h2 className="text-xl font-semibold text-gray-800">Latest News</h2>
           {news.slice(0, settings.newsCount).map((item, index) => (
             <NewsCard
               key={index}
