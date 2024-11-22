@@ -9,6 +9,14 @@ interface SettingsModalProps {
   onSave: (settings: Settings) => void;
 }
 
+const FEED_OPTIONS = [
+  { value: 'https://www.forexlive.com/feed', label: 'Général' },
+  { value: 'https://www.forexlive.com/feed/news', label: 'Actualités' },
+  { value: 'https://www.forexlive.com/feed/technicalanalysis', label: 'Analyse Technique' },
+  { value: 'https://www.forexlive.com/feed/centralbank', label: 'Banques Centrales' },
+  { value: 'https://www.forexlive.com/feed/cryptocurrency', label: 'Crypto-monnaies' }
+];
+
 export default function SettingsModal({ isOpen, onClose, onSave }: SettingsModalProps) {
   const [settings, setSettings] = useState<Settings>(loadSettings());
 
@@ -22,7 +30,7 @@ export default function SettingsModal({ isOpen, onClose, onSave }: SettingsModal
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white/95 backdrop-blur-md rounded-2xl p-8 w-full max-w-md relative border border-gray-200 shadow-xl">
+      <div className="bg-white/95 backdrop-blur-md rounded-2xl p-8 w-full max-w-md relative border border-gray-200 shadow-xl max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
@@ -31,13 +39,13 @@ export default function SettingsModal({ isOpen, onClose, onSave }: SettingsModal
         </button>
         
         <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          Settings
+          Paramètres
         </h2>
         
         <div className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              OpenAI API Key
+              Clé API OpenAI
             </label>
             <input
               type="password"
@@ -50,28 +58,45 @@ export default function SettingsModal({ isOpen, onClose, onSave }: SettingsModal
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Language
+              Type de Feed
+            </label>
+            <select
+              value={settings.feedUrl}
+              onChange={(e) => setSettings({ ...settings, feedUrl: e.target.value })}
+              className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-800 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+            >
+              {FEED_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Langue
             </label>
             <select
               value={settings.language}
               onChange={(e) => setSettings({ ...settings, language: e.target.value as Settings['language'] })}
               className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-800 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
             >
-              <option value="en">English</option>
               <option value="fr">Français</option>
+              <option value="en">English</option>
               <option value="es">Español</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Number of News to Analyze
+              Nombre d'Actualités à Analyser
             </label>
             <input
               type="number"
               min="1"
               max="10"
-              value={settings.newsCount.toString()}
+              value={settings.newsCount}
               onChange={(e) => setSettings({ ...settings, newsCount: parseInt(e.target.value) || 5 })}
               className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-800 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
             />
@@ -79,7 +104,7 @@ export default function SettingsModal({ isOpen, onClose, onSave }: SettingsModal
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              OpenAI Model
+              Modèle OpenAI
             </label>
             <select
               value={settings.model}
@@ -96,7 +121,7 @@ export default function SettingsModal({ isOpen, onClose, onSave }: SettingsModal
             onClick={handleSave}
             className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] font-medium"
           >
-            Save Settings
+            Sauvegarder
           </button>
         </div>
       </div>

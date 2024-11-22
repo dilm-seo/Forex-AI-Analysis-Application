@@ -22,12 +22,35 @@ export interface Settings {
   language: 'en' | 'fr' | 'es';
   newsCount: number;
   model: 'gpt-4-turbo-preview' | 'gpt-4' | 'gpt-3.5-turbo';
+  feedUrl: string;
+  theme: 'light' | 'dark';
+  timeframe: '1h' | '4h' | '1d';
+  alertsEnabled: boolean;
+  favoritesPairs: string[];
 }
 
 export interface Analysis {
   summary: string;
+  currencies: CurrencyStrength[];
   scalping: string;
   dayTrading: string;
-  currencies: CurrencyStrength[];
   correlations: CurrencyCorrelation[];
+  keyLevels?: {
+    pair: string;
+    support: number[];
+    resistance: number[];
+  }[];
+  marketSentiment?: {
+    overall: 'bullish' | 'bearish' | 'neutral';
+    confidence: number;
+    factors: string[];
+  };
+  technicalIndicators?: {
+    pair: string;
+    indicators: {
+      name: string;
+      value: number;
+      signal: 'buy' | 'sell' | 'neutral';
+    }[];
+  }[];
 }
