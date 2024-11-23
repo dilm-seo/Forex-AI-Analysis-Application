@@ -18,15 +18,13 @@ const DEFAULT_SETTINGS = {
     excludedPairs: [],
     minRiskRewardRatio: 2,
     timeframes: ['1h', '4h', '1d'],
-    fundamentalFactors: {
-      economicImportance: 40,
-      monetaryPolicyWeight: 35,
-      geopoliticalRiskWeight: 25
-    },
     volatilityFilter: {
       min: 0.3,
       max: 2.0
-    }
+    },
+    correlationThreshold: 0.7,
+    momentumThreshold: 60,
+    trendStrengthThreshold: 50
   },
   notifications: {
     email: false,
@@ -39,8 +37,27 @@ const DEFAULT_SETTINGS = {
     maxRiskPerTrade: 2,
     maxDailyLoss: 6,
     preferredRiskRewardRatio: 2.5
+  },
+  customIndicators: {
+    rsi: {
+      enabled: true,
+      period: 14,
+      overbought: 70,
+      oversold: 30
+    },
+    macd: {
+      enabled: true,
+      fastPeriod: 12,
+      slowPeriod: 26,
+      signalPeriod: 9
+    },
+    bollinger: {
+      enabled: true,
+      period: 20,
+      standardDeviations: 2
+    }
   }
-} as const;
+};
 
 export const saveSettings = (settings: typeof DEFAULT_SETTINGS) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));

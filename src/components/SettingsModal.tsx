@@ -27,7 +27,7 @@ const TIMEFRAMES = [
 
 export default function SettingsModal({ isOpen, onClose, onSave }: SettingsModalProps) {
   const [settings, setSettings] = useState(loadSettings());
-  const [currentTab, setCurrentTab] = useState<'general' | 'analysis' | 'risk'>('general');
+  const [currentTab, setCurrentTab] = useState<'general' | 'analysis' | 'risk' | 'indicators'>('general');
 
   if (!isOpen) return null;
 
@@ -40,7 +40,8 @@ export default function SettingsModal({ isOpen, onClose, onSave }: SettingsModal
   const tabs = [
     { id: 'general', label: 'Général' },
     { id: 'analysis', label: 'Analyse' },
-    { id: 'risk', label: 'Gestion du Risque' }
+    { id: 'risk', label: 'Gestion du Risque' },
+    { id: 'indicators', label: 'Indicateurs' }
   ];
 
   return (
@@ -374,6 +375,275 @@ export default function SettingsModal({ isOpen, onClose, onSave }: SettingsModal
                   })}
                   className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-800 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
                 />
+              </div>
+            </>
+          )}
+
+          {currentTab === 'indicators' && (
+            <>
+              <div className="space-y-6">
+                <div className="border border-gray-200 rounded-xl p-4">
+                  <h3 className="text-lg font-medium text-gray-800 mb-4">RSI</h3>
+                  <div className="space-y-4">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={settings.customIndicators.rsi.enabled}
+                        onChange={(e) => setSettings({
+                          ...settings,
+                          customIndicators: {
+                            ...settings.customIndicators,
+                            rsi: {
+                              ...settings.customIndicators.rsi,
+                              enabled: e.target.checked
+                            }
+                          }
+                        })}
+                        className="rounded text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">Activer RSI</span>
+                    </label>
+
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Période
+                        </label>
+                        <input
+                          type="number"
+                          min="5"
+                          max="50"
+                          value={settings.customIndicators.rsi.period}
+                          onChange={(e) => setSettings({
+                            ...settings,
+                            customIndicators: {
+                              ...settings.customIndicators,
+                              rsi: {
+                                ...settings.customIndicators.rsi,
+                                period: parseInt(e.target.value) || 14
+                              }
+                            }
+                          })}
+                          className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-800 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Suracheté
+                        </label>
+                        <input
+                          type="number"
+                          min="60"
+                          max="90"
+                          value={settings.customIndicators.rsi.overbought}
+                          onChange={(e) => setSettings({
+                            ...settings,
+                            customIndicators: {
+                              ...settings.customIndicators,
+                              rsi: {
+                                ...settings.customIndicators.rsi,
+                                overbought: parseInt(e.target.value) || 70
+                              }
+                            }
+                          })}
+                          className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-800 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Survendu
+                        </label>
+                        <input
+                          type="number"
+                          min="10"
+                          max="40"
+                          value={settings.customIndicators.rsi.oversold}
+                          onChange={(e) => setSettings({
+                            ...settings,
+                            customIndicators: {
+                              ...settings.customIndicators,
+                              rsi: {
+                                ...settings.customIndicators.rsi,
+                                oversold: parseInt(e.target.value) || 30
+                              }
+                            }
+                          })}
+                          className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-800 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl p-4">
+                  <h3 className="text-lg font-medium text-gray-800 mb-4">MACD</h3>
+                  <div className="space-y-4">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={settings.customIndicators.macd.enabled}
+                        onChange={(e) => setSettings({
+                          ...settings,
+                          customIndicators: {
+                            ...settings.customIndicators,
+                            macd: {
+                              ...settings.customIndicators.macd,
+                              enabled: e.target.checked
+                            }
+                          }
+                        })}
+                        className="rounded text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">Activer MACD</span>
+                    </label>
+
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Période Rapide
+                        </label>
+                        <input
+                          type="number"
+                          min="5"
+                          max="20"
+                          value={settings.customIndicators.macd.fastPeriod}
+                          onChange={(e) => setSettings({
+                            ...settings,
+                            customIndicators: {
+                              ...settings.customIndicators,
+                              macd: {
+                                ...settings.customIndicators.macd,
+                                fastPeriod: parseInt(e.target.value) || 12
+                              }
+                            }
+                          })}
+                          className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-800 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Période Lente
+                        </label>
+                        <input
+                          type="number"
+                          min="20"
+                          max="40"
+                          value={settings.customIndicators.macd.slowPeriod}
+                          onChange={(e) => setSettings({
+                            ...settings,
+                            customIndicators: {
+                              ...settings.customIndicators,
+                              macd: {
+                                ...settings.customIndicators.macd,
+                                slowPeriod: parseInt(e.target.value) || 26
+                              }
+                            }
+                          })}
+                          className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-800 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Période Signal
+                        </label>
+                        <input
+                          type="number"
+                          min="5"
+                          max="15"
+                          value={settings.customIndicators.macd.signalPeriod}
+                          onChange={(e) => setSettings({
+                            ...settings,
+                            customIndicators: {
+                              ...settings.customIndicators,
+                              macd: {
+                                ...settings.customIndicators.macd,
+                                signalPeriod: parseInt(e.target.value) || 9
+                              }
+                            }
+                          })}
+                          className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-800 focus:ring-2 focus: ring-blue-400 focus:border-transparent transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl p-4">
+                  <h3 className="text-lg font-medium text-gray-800 mb-4">Bandes de Bollinger</h3>
+                  <div className="space-y-4">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={settings.customIndicators.bollinger.enabled}
+                        onChange={(e) => setSettings({
+                          ...settings,
+                          customIndicators: {
+                            ...settings.customIndicators,
+                            bollinger: {
+                              ...settings.customIndicators.bollinger,
+                              enabled: e.target.checked
+                            }
+                          }
+                        })}
+                        className="rounded text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">Activer Bollinger</span>
+                    </label>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Période
+                        </label>
+                        <input
+                          type="number"
+                          min="10"
+                          max="50"
+                          value={settings.customIndicators.bollinger.period}
+                          onChange={(e) => setSettings({
+                            ...settings,
+                            customIndicators: {
+                              ...settings.customIndicators,
+                              bollinger: {
+                                ...settings.customIndicators.bollinger,
+                                period: parseInt(e.target.value) || 20
+                              }
+                            }
+                          })}
+                          className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-800 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Écarts-types
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="3"
+                          step="0.5"
+                          value={settings.customIndicators.bollinger.standardDeviations}
+                          onChange={(e) => setSettings({
+                            ...settings,
+                            customIndicators: {
+                              ...settings.customIndicators,
+                              bollinger: {
+                                ...settings.customIndicators.bollinger,
+                                standardDeviations: parseFloat(e.target.value) || 2
+                              }
+                            }
+                          })}
+                          className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-800 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </>
           )}

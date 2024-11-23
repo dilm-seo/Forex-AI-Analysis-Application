@@ -10,18 +10,8 @@ export interface CurrencyStrength {
   strength: number;
   trend: 'up' | 'down' | 'neutral';
   factors: string[];
-  fundamentals: {
-    economicGrowth: number;
-    inflation: number;
-    interestRates: number;
-    employment: number;
-    tradeBalance: number;
-  };
-  events: {
-    impact: 'high' | 'medium' | 'low';
-    description: string;
-    date: string;
-  }[];
+  volatility: number;
+  momentum: number;
 }
 
 export interface TradingOpportunity {
@@ -34,11 +24,16 @@ export interface TradingOpportunity {
   stopLoss: number;
   target: number;
   riskRewardRatio: number;
-  fundamentalFactors: {
-    monetaryPolicy: string;
-    economicData: string;
-    politicalFactors: string;
-    marketSentiment: string;
+  volatility: number;
+  volume: number;
+  pivotPoints: {
+    r3: number;
+    r2: number;
+    r1: number;
+    pivot: number;
+    s1: number;
+    s2: number;
+    s3: number;
   };
 }
 
@@ -48,7 +43,7 @@ export interface CurrencyCorrelation {
   explanation: string;
   factors: string[];
   strength: 'forte' | 'moyenne' | 'faible';
-  fundamentalDrivers: string[];
+  stability: number;
   period: '1j' | '1s' | '1m';
 }
 
@@ -56,18 +51,20 @@ export interface MarketSentiment {
   overall: 'risk-on' | 'risk-off' | 'neutral';
   confidence: number;
   drivers: string[];
+  volatilityIndex: number;
+  marketStress: number;
+  liquidityScore: number;
+  technicalFactors: {
+    trendStrength: number;
+    momentum: number;
+    volatility: number;
+    volume: number;
+  };
   fundamentalFactors: {
     economicHealth: number;
     monetaryPolicy: 'hawkish' | 'dovish' | 'neutral';
     geopoliticalRisk: number;
-    marketLiquidity: number;
-    globalGrowth: number;
   };
-  keyEvents: {
-    event: string;
-    impact: 'high' | 'medium' | 'low';
-    date: string;
-  }[];
 }
 
 export interface Analysis {
@@ -88,15 +85,13 @@ export interface AnalysisSettings {
   excludedPairs: string[];
   minRiskRewardRatio: number;
   timeframes: AnalysisTimeframe[];
-  fundamentalFactors: {
-    economicImportance: number;
-    monetaryPolicyWeight: number;
-    geopoliticalRiskWeight: number;
-  };
   volatilityFilter: {
     min: number;
     max: number;
   };
+  correlationThreshold: number;
+  momentumThreshold: number;
+  trendStrengthThreshold: number;
 }
 
 export type AnalysisTimeframe = '1h' | '4h' | '1d' | '1w' | '1m';
@@ -123,5 +118,24 @@ export interface Settings {
     maxRiskPerTrade: number;
     maxDailyLoss: number;
     preferredRiskRewardRatio: number;
+  };
+  customIndicators: {
+    rsi: {
+      enabled: boolean;
+      period: number;
+      overbought: number;
+      oversold: number;
+    };
+    macd: {
+      enabled: boolean;
+      fastPeriod: number;
+      slowPeriod: number;
+      signalPeriod: number;
+    };
+    bollinger: {
+      enabled: boolean;
+      period: number;
+      standardDeviations: number;
+    };
   };
 }
