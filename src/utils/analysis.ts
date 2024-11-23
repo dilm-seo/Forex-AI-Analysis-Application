@@ -1,44 +1,28 @@
 import type { Analysis, NewsItem } from '../types';
 
-const SYSTEM_PROMPT = `Vous êtes un analyste forex professionnel expérimenté. Analysez les nouvelles suivantes en utilisant une approche multi-factorielle pour générer des signaux de trading cohérents.
+const SYSTEM_PROMPT = `En tant qu'analyste forex professionnel, analysez les nouvelles fournies et générez une analyse fondamentale structurée. Répondez UNIQUEMENT avec un objet JSON valide, sans formatage ou texte supplémentaire.
 
-Règles CRITIQUES pour la génération des signaux :
-
-1. Logique des Paires
-   - Une opportunité d'achat (BUY) n'est valide que si :
-     * La devise de base est haussière (UP) ET la devise cotée est baissière (DOWN)
-     * La force relative de la devise de base est significativement supérieure
-   - Une opportunité de vente (SELL) n'est valide que si :
-     * La devise de base est baissière (DOWN) ET la devise cotée est haussière (UP)
-     * La force relative de la devise cotée est significativement supérieure
-   - Les paires avec des tendances similaires ne génèrent pas de signal
-
-2. Critères de Force
-   - Différentiel minimum de 20% entre les forces des devises
-   - Force minimale de 60% pour la devise dominante
-   - Faiblesse maximale de 40% pour la devise faible
-
-3. Timeframes
-   - Court terme (1-3 jours) : Différentiel de force 20-40%
-   - Moyen terme (1-2 semaines) : Différentiel de force 40-60%
-   - Long terme (2+ semaines) : Différentiel de force >60%
-
-4. Gestion du Risque
-   - Ratio risque/rendement minimum de 1:2
-   - Stop loss basé sur le support/résistance le plus proche
-   - Target basé sur les niveaux techniques majeurs
-   - Risque ajusté selon la volatilité de la paire
-
-Format de réponse attendu (JSON pur) :
+Format de réponse attendu :
 {
   "currencies": [
     {
       "currency": "USD",
       "strength": 75,
       "trend": "up",
-      "factors": [
-        "Hausse des taux Fed",
-        "Données économiques solides"
+      "factors": ["Hausse des taux Fed", "Croissance robuste"],
+      "fundamentals": {
+        "economicGrowth": 80,
+        "inflation": 65,
+        "interestRates": 85,
+        "employment": 75,
+        "tradeBalance": 60
+      },
+      "events": [
+        {
+          "impact": "high",
+          "description": "Réunion Fed",
+          "date": "2024-03-20"
+        }
       ]
     }
   ],
@@ -49,14 +33,19 @@ Format de réponse attendu (JSON pur) :
       "timeframe": "moyen",
       "strength": 85,
       "reasoning": [
-        "EUR baissier (trend: down, force: 35%)",
-        "USD haussier (trend: up, force: 75%)",
-        "Différentiel de force: 40%",
-        "Support technique cassé"
+        "Divergence politique monétaire",
+        "Différentiel de croissance favorable au USD"
       ],
       "risk": "modéré",
       "stopLoss": 1.0850,
-      "target": 1.0650
+      "target": 1.0650,
+      "riskRewardRatio": 2.5,
+      "fundamentalFactors": {
+        "monetaryPolicy": "Divergence croissante Fed/BCE",
+        "economicData": "USA plus robuste que Zone Euro",
+        "politicalFactors": "Stabilité politique US",
+        "marketSentiment": "Préférence pour le dollar"
+      }
     }
   ],
   "correlations": [
@@ -64,138 +53,181 @@ Format de réponse attendu (JSON pur) :
       "pair": "EUR/USD",
       "correlation": -0.85,
       "explanation": "Forte corrélation négative due à la divergence des politiques monétaires",
-      "factors": [
-        "BCE dovish vs Fed hawkish",
-        "Différentiel de taux croissant"
-      ]
+      "strength": "forte",
+      "fundamentalDrivers": [
+        "Différentiel de taux d'intérêt",
+        "Croissance économique relative"
+      ],
+      "period": "1m"
     }
   ],
   "marketSentiment": {
     "overall": "risk-off",
     "confidence": 75,
     "drivers": [
-      "Aversion au risque élevée",
-      "Volatilité en hausse"
+      "Tensions géopolitiques",
+      "Ralentissement chinois"
+    ],
+    "fundamentalFactors": {
+      "economicHealth": 65,
+      "monetaryPolicy": "hawkish",
+      "geopoliticalRisk": 70,
+      "marketLiquidity": 80,
+      "globalGrowth": 60
+    },
+    "keyEvents": [
+      {
+        "event": "Publication PIB US",
+        "impact": "high",
+        "date": "2024-03-28"
+      }
     ]
   }
 }
 
-Validation des Signaux :
-
-1. Vérifiez que chaque opportunité respecte :
-   - La cohérence des tendances (haussière vs baissière)
-   - Le différentiel de force minimum
-   - La validité des niveaux techniques
-   - La logique du timeframe
-
-2. Assurez-vous que :
-   - Les corrélations sont basées sur des facteurs fondamentaux
-   - Le sentiment reflète l'ensemble des conditions
-   - Les facteurs cités sont vérifiables et actuels
-
-3. Évitez :
-   - Les signaux contradictoires
-   - Les paires avec faible liquidité
-   - Les niveaux non significatifs
-   - Les analyses non fondées
-
-Retournez UNIQUEMENT l'objet JSON, sans formatage markdown ni blocs de code.`;
+IMPORTANT:
+- Les tendances (trend) doivent être exactement "up", "down" ou "neutral"
+- Les forces (strength) doivent être entre 0 et 100
+- Les types d'opportunités doivent être "buy" ou "sell"
+- Les timeframes doivent être "court", "moyen" ou "long"
+- Les niveaux de risque doivent être "faible", "modéré" ou "élevé"
+- Le sentiment global doit être "risk-on", "risk-off" ou "neutral"
+- Les corrélations doivent être entre -1 et 1
+- Les forces de corrélation doivent être "forte", "moyenne" ou "faible"
+- Les périodes doivent être "1j", "1s" ou "1m"`;
 
 interface ProgressCallback {
   (value: number, message: string): void;
 }
 
+const cleanJsonString = (str: string): string => {
+  try {
+    const jsonStart = str.indexOf('{');
+    const jsonEnd = str.lastIndexOf('}') + 1;
+    if (jsonStart === -1 || jsonEnd === 0) {
+      throw new Error('Réponse invalide : aucun objet JSON trouvé');
+    }
+    return str.slice(jsonStart, jsonEnd);
+  } catch (error) {
+    throw new Error('Erreur lors du nettoyage de la réponse JSON');
+  }
+};
+
+const validateCurrency = (currency: any): boolean => {
+  if (!currency || typeof currency !== 'object') return false;
+
+  const validTrends = ['up', 'down', 'neutral'];
+  const validImpacts = ['high', 'medium', 'low'];
+
+  return (
+    typeof currency.currency === 'string' &&
+    typeof currency.strength === 'number' &&
+    currency.strength >= 0 &&
+    currency.strength <= 100 &&
+    validTrends.includes(currency.trend) &&
+    Array.isArray(currency.factors) &&
+    currency.factors.every((f: any) => typeof f === 'string') &&
+    typeof currency.fundamentals === 'object' &&
+    Array.isArray(currency.events) &&
+    currency.events.every((e: any) =>
+      validImpacts.includes(e.impact) &&
+      typeof e.description === 'string' &&
+      typeof e.date === 'string'
+    )
+  );
+};
+
+const validateOpportunity = (opp: any): boolean => {
+  if (!opp || typeof opp !== 'object') return false;
+
+  const validTypes = ['buy', 'sell'];
+  const validTimeframes = ['court', 'moyen', 'long'];
+  const validRisks = ['faible', 'modéré', 'élevé'];
+
+  return (
+    typeof opp.pair === 'string' &&
+    validTypes.includes(opp.type) &&
+    validTimeframes.includes(opp.timeframe) &&
+    typeof opp.strength === 'number' &&
+    opp.strength >= 0 &&
+    opp.strength <= 100 &&
+    Array.isArray(opp.reasoning) &&
+    validRisks.includes(opp.risk) &&
+    typeof opp.stopLoss === 'number' &&
+    typeof opp.target === 'number' &&
+    typeof opp.riskRewardRatio === 'number' &&
+    typeof opp.fundamentalFactors === 'object'
+  );
+};
+
+const validateCorrelation = (correlation: any): boolean => {
+  if (!correlation || typeof correlation !== 'object') return false;
+
+  const validStrengths = ['forte', 'moyenne', 'faible'];
+  const validPeriods = ['1j', '1s', '1m'];
+
+  return (
+    typeof correlation.pair === 'string' &&
+    typeof correlation.correlation === 'number' &&
+    correlation.correlation >= -1 &&
+    correlation.correlation <= 1 &&
+    typeof correlation.explanation === 'string' &&
+    validStrengths.includes(correlation.strength) &&
+    Array.isArray(correlation.fundamentalDrivers) &&
+    validPeriods.includes(correlation.period)
+  );
+};
+
+const validateMarketSentiment = (sentiment: any): boolean => {
+  if (!sentiment || typeof sentiment !== 'object') return false;
+
+  const validOverall = ['risk-on', 'risk-off', 'neutral'];
+  const validPolicies = ['hawkish', 'dovish', 'neutral'];
+  const validImpacts = ['high', 'medium', 'low'];
+
+  return (
+    validOverall.includes(sentiment.overall) &&
+    typeof sentiment.confidence === 'number' &&
+    sentiment.confidence >= 0 &&
+    sentiment.confidence <= 100 &&
+    Array.isArray(sentiment.drivers) &&
+    typeof sentiment.fundamentalFactors === 'object' &&
+    validPolicies.includes(sentiment.fundamentalFactors.monetaryPolicy) &&
+    Array.isArray(sentiment.keyEvents) &&
+    sentiment.keyEvents.every((e: any) =>
+      typeof e.event === 'string' &&
+      validImpacts.includes(e.impact) &&
+      typeof e.date === 'string'
+    )
+  );
+};
+
 const validateAnalysis = (data: any): data is Analysis => {
-  if (!data || typeof data !== 'object') {
-    throw new Error('Format de réponse invalide');
-  }
-
-  // Validation des devises
-  if (!Array.isArray(data.currencies)) {
-    throw new Error('Liste des devises invalide');
-  }
-
-  data.currencies.forEach((currency: any, index: number) => {
-    if (
-      typeof currency.currency !== 'string' ||
-      typeof currency.strength !== 'number' ||
-      !['up', 'down', 'neutral'].includes(currency.trend) ||
-      !Array.isArray(currency.factors)
-    ) {
-      throw new Error(`Devise invalide à l'index ${index}`);
-    }
-  });
-
-  // Validation des opportunités
-  if (!Array.isArray(data.opportunities)) {
-    throw new Error('Liste des opportunités invalide');
-  }
-
-  data.opportunities.forEach((opp: any, index: number) => {
-    if (
-      typeof opp.pair !== 'string' ||
-      !['buy', 'sell'].includes(opp.type) ||
-      !['court', 'moyen', 'long'].includes(opp.timeframe) ||
-      typeof opp.strength !== 'number' ||
-      !Array.isArray(opp.reasoning) ||
-      !['faible', 'modéré', 'élevé'].includes(opp.risk) ||
-      typeof opp.stopLoss !== 'number' ||
-      typeof opp.target !== 'number'
-    ) {
-      throw new Error(`Opportunité invalide à l'index ${index}`);
+  try {
+    if (!data || typeof data !== 'object') {
+      throw new Error('Données invalides');
     }
 
-    // Validation de la cohérence des signaux
-    const [baseCurrency, quoteCurrency] = opp.pair.split('/');
-    const baseInfo = data.currencies.find(c => c.currency === baseCurrency);
-    const quoteInfo = data.currencies.find(c => c.currency === quoteCurrency);
-
-    if (!baseInfo || !quoteInfo) {
-      throw new Error(`Devises non trouvées pour la paire ${opp.pair}`);
+    if (!Array.isArray(data.currencies) || !data.currencies.every(validateCurrency)) {
+      throw new Error('Validation des devises échouée');
     }
 
-    const isValidBuy = opp.type === 'buy' && 
-      baseInfo.trend === 'up' && 
-      quoteInfo.trend === 'down' && 
-      (baseInfo.strength - quoteInfo.strength >= 20);
-
-    const isValidSell = opp.type === 'sell' && 
-      baseInfo.trend === 'down' && 
-      quoteInfo.trend === 'up' && 
-      (quoteInfo.strength - baseInfo.strength >= 20);
-
-    if (!isValidBuy && !isValidSell) {
-      throw new Error(`Signal invalide pour la paire ${opp.pair}: tendances incohérentes`);
+    if (!Array.isArray(data.opportunities) || !data.opportunities.every(validateOpportunity)) {
+      throw new Error('Validation des opportunités échouée');
     }
-  });
 
-  // Validation des corrélations
-  if (!Array.isArray(data.correlations)) {
-    throw new Error('Liste des corrélations invalide');
+    if (!Array.isArray(data.correlations) || !data.correlations.every(validateCorrelation)) {
+      throw new Error('Validation des corrélations échouée');
+    }
+
+    if (!validateMarketSentiment(data.marketSentiment)) {
+      throw new Error('Validation du sentiment échouée');
+    }
+
+    return true;
+  } catch (error) {
+    throw new Error(`Validation échouée: ${error instanceof Error ? error.message : 'erreur inconnue'}`);
   }
-
-  data.correlations.forEach((corr: any, index: number) => {
-    if (
-      typeof corr.pair !== 'string' ||
-      typeof corr.correlation !== 'number' ||
-      typeof corr.explanation !== 'string' ||
-      !Array.isArray(corr.factors)
-    ) {
-      throw new Error(`Corrélation invalide à l'index ${index}`);
-    }
-  });
-
-  // Validation du sentiment
-  if (
-    !data.marketSentiment ||
-    !['risk-on', 'risk-off', 'neutral'].includes(data.marketSentiment.overall) ||
-    typeof data.marketSentiment.confidence !== 'number' ||
-    !Array.isArray(data.marketSentiment.drivers)
-  ) {
-    throw new Error('Sentiment de marché invalide');
-  }
-
-  return true;
 };
 
 export const analyzeMarketData = async (
@@ -204,7 +236,7 @@ export const analyzeMarketData = async (
   onProgress: ProgressCallback
 ): Promise<Analysis> => {
   try {
-    onProgress(10, 'Préparation des données...');
+    onProgress(10, 'Préparation de l\'analyse...');
 
     const newsContent = news.map(item => ({
       title: item.title,
@@ -212,7 +244,7 @@ export const analyzeMarketData = async (
       date: item.pubDate
     }));
 
-    onProgress(30, 'Analyse en cours...');
+    onProgress(30, 'Analyse des nouvelles...');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -223,46 +255,45 @@ export const analyzeMarketData = async (
       body: JSON.stringify({
         model: 'gpt-4-turbo-preview',
         messages: [
-          {
-            role: 'system',
-            content: SYSTEM_PROMPT
-          },
-          {
-            role: 'user',
-            content: JSON.stringify(newsContent)
-          }
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: JSON.stringify(newsContent) }
         ],
-        temperature: 0.7,
-        max_tokens: 2000
+        temperature: 0.3,
+        max_tokens: 2500,
+        response_format: { type: "json_object" }
       })
     });
 
-    onProgress(60, 'Traitement des résultats...');
+    onProgress(60, 'Traitement de la réponse...');
 
     if (!response.ok) {
-      throw new Error('Erreur lors de la requête vers OpenAI');
+      const error = await response.json();
+      throw new Error(`Erreur OpenAI: ${error.error?.message || 'Erreur inconnue'}`);
     }
 
     const result = await response.json();
     const content = result.choices[0].message.content;
 
-    onProgress(80, 'Validation des données...');
+    onProgress(80, 'Validation de l\'analyse...');
 
     try {
-      const parsedData = JSON.parse(content);
+      const cleanedContent = cleanJsonString(content);
+      const parsedData = JSON.parse(cleanedContent);
+
       if (validateAnalysis(parsedData)) {
         onProgress(100, 'Analyse terminée');
-        return parsedData;
+        return {
+          ...parsedData,
+          timestamp: Date.now(),
+          confidence: Math.round((parsedData.marketSentiment?.confidence || 0) * 0.8)
+        };
       }
-    } catch (error) {
-      throw new Error('Impossible de parser la réponse JSON');
-    }
 
-    throw new Error('Format de réponse invalide');
-  } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Erreur lors de l'analyse du marché: ${error.message}`);
+      throw new Error('Validation de l\'analyse échouée');
+    } catch (error) {
+      throw new Error(`Erreur de parsing: ${error instanceof Error ? error.message : 'erreur inconnue'}`);
     }
-    throw new Error('Une erreur inattendue est survenue');
+  } catch (error) {
+    throw new Error(`Erreur d'analyse: ${error instanceof Error ? error.message : 'erreur inconnue'}`);
   }
 };
