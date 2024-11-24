@@ -21,7 +21,7 @@ Règles :
    - Ratio risque/rendement minimum de 1:2
    - Stop loss sur le support/résistance le plus proche
 
-Retournez UNIQUEMENT l'objet JSON, sans formatage markdown.`;
+Retournez UNIQUEMENT un objet JSON valide avec les informations demandées, sans aucun texte supplémentaire. Ne fournissez aucune explication ou commentaire en dehors de l'objet JSON.`;
 
 interface ProgressCallback {
   (value: number, message: string): void;
@@ -168,26 +168,16 @@ export const analyzeMarketData = async (
 
     const result = await response.json();
     let content = result.choices[0].message.content.trim();
-    // Tentative de correction si la réponse contient du texte non JSON
-    try {
-      const jsonStart = content.indexOf('{');
-      const jsonEnd = content.lastIndexOf('}') + 1;
-      if (jsonStart !== -1 && jsonEnd !== -1) {
-        content = content.substring(jsonStart, jsonEnd);
-      }
-    } catch (error) {
-      throw new Error('Impossible de localiser le JSON dans la réponse.');
-    }
 
     onProgress(80, 'Validation des données...');
 
     try {
       let parsedData;
-      try {
-        parsedData = JSON.parse(content);
-      } catch (error) {
-        throw new Error('La réponse de l\'API n\'est pas au format JSON valide après extraction.');
-      }
+    try {
+      parsedData = JSON.parse(content);
+    } catch (error) {
+      throw new Error('La réponse de l\'API n\'est pas au format JSON valide. Assurez-vous que le modèle ne retourne que du JSON.');
+    }
       if (validateAnalysis(parsedData)) {
         onProgress(100, 'Analyse terminée');
         return parsedData;
