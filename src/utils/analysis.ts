@@ -21,7 +21,7 @@ Règles :
    - Ratio risque/rendement minimum de 1:2
    - Stop loss sur le support/résistance le plus proche
 
-Retournez STRICTEMENT un objet JSON valide avec les informations demandées, sans aucun texte supplémentaire, commentaire, ou explication. Si ce n'est pas possible, retournez un objet JSON vide {}.`;
+Retournez STRICTEMENT un objet JSON valide avec les informations demandées, sans aucun texte supplémentaire, commentaire, ou explication. Utilisez le format JSON strictement valide et rien d'autre.`;
 
 interface ProgressCallback {
   (value: number, message: string): void;
@@ -170,11 +170,7 @@ export const analyzeMarketData = async (
     let content = result.choices[0].message.content.trim();
 
     // Si le contenu ne semble pas être un JSON valide, utiliser un second prompt pour le corriger
-    if (!content.startsWith('{') || !content.endsWith('}')) {
-      const correctionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
+    `,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -210,7 +206,7 @@ export const analyzeMarketData = async (
     try {
       parsedData = JSON.parse(content);
     } catch (error) {
-      throw new Error('La réponse de l\'API n\'est pas au format JSON valide. Assurez-vous que le modèle ne retourne que du JSON.');
+      throw new Error('La réponse de l\'API n\'est pas au format JSON valide. Assurez-vous que le modèle retourne uniquement du JSON sans aucun texte supplémentaire.');
     }
       if (validateAnalysis(parsedData)) {
         onProgress(100, 'Analyse terminée');
