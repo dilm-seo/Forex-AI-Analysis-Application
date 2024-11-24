@@ -246,12 +246,23 @@ export const analyzeMarketData = async (
     }
 
     const result = await response.json();
-    const content = result.choices[0].message.content;
+    let content = result.choices[0].message.content.trim();
+    // Remove any non-JSON text around the actual response
+    const jsonStart = content.indexOf('{');
+    const jsonEnd = content.lastIndexOf('}') + 1;
+    if (jsonStart !== -1 && jsonEnd !== -1) {
+      content = content.substring(jsonStart, jsonEnd);
+    }
 
     onProgress(80, 'Validation des données...');
 
     try {
-      const parsedData = JSON.parse(content);
+      let parsedData;
+      try {
+        parsedData = JSON.parse(content);
+      } catch (error) {
+        throw new Error('La réponse de l'API n'est pas au format JSON valide après extraction.');
+      }
       if (validateAnalysis(parsedData)) {
         onProgress(100, 'Analyse terminée');
         return parsedData;
