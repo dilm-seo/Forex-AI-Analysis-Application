@@ -203,66 +203,80 @@ export const analyzeMarketData = async (
   apiKey: string,
   onProgress: ProgressCallback
 ): Promise<Analysis> => {
-  try {
-    onProgress(10, 'Préparation des données...');
+  let retryCount = 0;
+  const maxRetries = 3;
 
-    const newsContent = news.map(item => ({
-      title: item.title,
-      description: item.description,
-      date: item.pubDate
-    }));
-
-    onProgress(30, 'Analyse en cours...');
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'gpt-4-turbo-preview',
-        messages: [
-          {
-            role: 'system',
-            content: SYSTEM_PROMPT
-          },
-          {
-            role: 'user',
-            content: JSON.stringify(newsContent)
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000
-      })
-    });
-
-    onProgress(60, 'Traitement des résultats...');
-
-    if (!response.ok) {
-      throw new Error('Erreur lors de la requête vers OpenAI');
-    }
-
-    const result = await response.json();
-    const content = result.choices[0].message.content;
-
-    onProgress(80, 'Validation des données...');
-
+  while (retryCount < maxRetries) {
     try {
-      const parsedData = JSON.parse(content);
-      if (validateAnalysis(parsedData)) {
-        onProgress(100, 'Analyse terminée');
-        return parsedData;
+      onProgress(10, 'Préparation des données...');
+
+      const newsContent = news.map(item => ({
+        title: item.title,
+        description: item.description,
+        date: item.pubDate
+      }));
+
+      onProgress(30, 'Analyse en cours...');
+
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'gpt-4-turbo-preview',
+          messages: [
+            {
+              role: 'system',
+              content: SYSTEM_PROMPT
+            },
+            {
+              role: 'user',
+              content: JSON.stringify(newsContent)
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 2000
+        })
+      });
+
+      onProgress(60, 'Traitement des résultats...');
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la requête vers OpenAI');
+      }
+
+      const result = await response.json();
+      const content = result.choices[0].message.content;
+
+      onProgress(80, 'Validation des données...');
+
+      try {
+        const parsedData = JSON.parse(content);
+        if (validateAnalysis(parsedData)) {
+          onProgress(100, 'Analyse terminée');
+          return parsedData;
+        }
+      } catch (error) {
+        retryCount++;
+        if (retryCount >= maxRetries) {
+          throw new Error('Impossible de parser la réponse JSON après plusieurs tentatives');
+        }
+        onProgress(70, `Erreur de parsing JSON, nouvelle tentative (${retryCount}/${maxRetries})...`);
       }
     } catch (error) {
-      throw new Error('Impossible de parser la réponse JSON');
+      if (error instanceof Error) {
+        if (retryCount >= maxRetries) {
+          throw new Error(`Erreur lors de l'analyse du marché: ${error.message}`);
+        }
+        retryCount++;
+        onProgress(50, `Erreur rencontrée, nouvelle tentative (${retryCount}/${maxRetries})...`);
+      } else {
+        throw new Error('Une erreur inattendue est survenue');
+      }
     }
-
-    throw new Error('Format de réponse invalide');
-  } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Erreur lors de l'analyse du marché: ${error.message}`);
-    }
-    throw new Error('Une erreur inattendue est survenue');
   }
+
+  throw new Error('Analyse impossible après plusieurs tentatives');
 };
