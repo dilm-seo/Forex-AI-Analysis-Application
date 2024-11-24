@@ -1,6 +1,6 @@
 import type { Analysis, NewsItem } from '../types';
 
-const SYSTEM_PROMPT = Vous êtes un analyste forex professionnel expérimenté. Analysez les nouvelles suivantes en utilisant une approche multi-factorielle pour générer des signaux de trading cohérents.
+const SYSTEM_PROMPT = `Vous êtes un analyste forex professionnel expérimenté. Analysez les nouvelles suivantes en utilisant une approche multi-factorielle pour générer des signaux de trading cohérents.
 
 Règles CRITIQUES pour la génération des signaux :
 
@@ -28,6 +28,8 @@ Règles CRITIQUES pour la génération des signaux :
    - Stop loss basé sur le support/résistance le plus proche
    - Target basé sur les niveaux techniques majeurs
    - Risque ajusté selon la volatilité de la paire
+
+Pour chaque opportunité, fournissez une analyse détaillée basée sur les données économiques réelles et actuelles. Utilisez les nouvelles données pour justifier les tendances et les signaux générés.
 
 Format de réponse attendu (JSON pur) :
 {
@@ -99,7 +101,7 @@ Validation des Signaux :
    - Les niveaux non significatifs
    - Les analyses non fondées
 
-Retournez UNIQUEMENT l'objet JSON, sans formatage markdown ni blocs de code.;
+Retournez UNIQUEMENT l'objet JSON, sans formatage markdown ni blocs de code.`;
 
 interface ProgressCallback {
   (value: number, message: string): void;
@@ -122,7 +124,7 @@ const validateAnalysis = (data: any): data is Analysis => {
       !['up', 'down', 'neutral'].includes(currency.trend) ||
       !Array.isArray(currency.factors)
     ) {
-      throw new Error(Devise invalide à l'index ${index});
+      throw new Error(`Devise invalide à l'index ${index}`);
     }
   });
 
@@ -142,7 +144,7 @@ const validateAnalysis = (data: any): data is Analysis => {
       typeof opp.stopLoss !== 'number' ||
       typeof opp.target !== 'number'
     ) {
-      throw new Error(Opportunité invalide à l'index ${index});
+      throw new Error(`Opportunité invalide à l'index ${index}`);
     }
 
     // Validation de la cohérence des signaux
@@ -151,7 +153,7 @@ const validateAnalysis = (data: any): data is Analysis => {
     const quoteInfo = data.currencies.find(c => c.currency === quoteCurrency);
 
     if (!baseInfo || !quoteInfo) {
-      throw new Error(Devises non trouvées pour la paire ${opp.pair});
+      throw new Error(`Devises non trouvées pour la paire ${opp.pair}`);
     }
 
     const isValidBuy = opp.type === 'buy' && 
@@ -165,7 +167,7 @@ const validateAnalysis = (data: any): data is Analysis => {
       (quoteInfo.strength - baseInfo.strength >= 20);
 
     if (!isValidBuy && !isValidSell) {
-      throw new Error(Signal invalide pour la paire ${opp.pair}: tendances incohérentes);
+      throw new Error(`Signal invalide pour la paire ${opp.pair}: tendances incohérentes`);
     }
   });
 
@@ -181,7 +183,7 @@ const validateAnalysis = (data: any): data is Analysis => {
       typeof corr.explanation !== 'string' ||
       !Array.isArray(corr.factors)
     ) {
-      throw new Error(Corrélation invalide à l'index ${index});
+      throw new Error(`Corrélation invalide à l'index ${index}`);
     }
   });
 
@@ -217,11 +219,11 @@ export const analyzeMarketData = async (
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': Bearer ${apiKey},
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-4-turbo-preview',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -244,12 +246,27 @@ export const analyzeMarketData = async (
     }
 
     const result = await response.json();
-    const content = result.choices[0].message.content;
+    let content = result.choices[0].message.content.trim();
+    // Tentative de correction si la réponse contient du texte non JSON
+    try {
+      const jsonStart = content.indexOf('{');
+      const jsonEnd = content.lastIndexOf('}') + 1;
+      if (jsonStart !== -1 && jsonEnd !== -1) {
+        content = content.substring(jsonStart, jsonEnd);
+      }
+    } catch (error) {
+      throw new Error('Impossible de localiser le JSON dans la réponse.');
+    }
 
     onProgress(80, 'Validation des données...');
 
     try {
-      const parsedData = JSON.parse(content);
+      let parsedData;
+      try {
+        parsedData = JSON.parse(content);
+      } catch (error) {
+        throw new Error('La réponse de l\'API n\'est pas au format JSON valide après extraction.');
+      }
       if (validateAnalysis(parsedData)) {
         onProgress(100, 'Analyse terminée');
         return parsedData;
@@ -261,7 +278,7 @@ export const analyzeMarketData = async (
     throw new Error('Format de réponse invalide');
   } catch (error) {
     if (error instanceof Error) {
-      throw new Error(Erreur lors de l'analyse du marché: ${error.message});
+      throw new Error(`Erreur lors de l'analyse du marché: ${error.message}`);
     }
     throw new Error('Une erreur inattendue est survenue');
   }
