@@ -21,7 +21,7 @@ Règles :
    - Ratio risque/rendement minimum de 1:2
    - Stop loss sur le support/résistance le plus proche
 
-Retournez UNIQUEMENT un objet JSON valide avec les informations demandées, sans aucun texte supplémentaire. Ne fournissez aucune explication ou commentaire en dehors de l'objet JSON.`;
+Retournez STRICTEMENT un objet JSON valide avec les informations demandées, sans aucun texte supplémentaire, commentaire, ou explication. Si ce n'est pas possible, retournez un objet JSON vide {}.`;
 
 interface ProgressCallback {
   (value: number, message: string): void;
@@ -168,6 +168,10 @@ export const analyzeMarketData = async (
 
     const result = await response.json();
     let content = result.choices[0].message.content.trim();
+    // Vérifier si le contenu commence par '{' et se termine par '}' pour s'assurer que c'est un JSON valide
+    if (!content.startsWith('{') || !content.endsWith('}')) {
+      throw new Error('La réponse de l\'API n\'est pas un JSON valide.');
+    }
 
     onProgress(80, 'Validation des données...');
 
