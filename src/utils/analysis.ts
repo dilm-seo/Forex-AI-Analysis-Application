@@ -168,9 +168,39 @@ export const analyzeMarketData = async (
 
     const result = await response.json();
     let content = result.choices[0].message.content.trim();
-    // Vérifier si le contenu commence par '{' et se termine par '}' pour s'assurer que c'est un JSON valide
+
+    // Si le contenu ne semble pas être un JSON valide, utiliser un second prompt pour le corriger
     if (!content.startsWith('{') || !content.endsWith('}')) {
-      throw new Error('La réponse de l\'API n\'est pas un JSON valide.');
+      const correctionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [
+            {
+              role: 'system',
+              content: 'Corrigez le texte suivant pour qu\'il soit un JSON strictement valide :'
+            },
+            {
+              role: 'user',
+              content: content
+            }
+          ],
+          temperature: 0.2,
+          max_tokens: 1500
+        })
+      });
+
+      if (!correctionResponse.ok) {
+        const errorDetail = await correctionResponse.text();
+        throw new Error(`Erreur lors de la requête de correction vers OpenAI: ${correctionResponse.status} - ${correctionResponse.statusText} - ${errorDetail}`);
+      }
+
+      const correctionResult = await correctionResponse.json();
+      content = correctionResult.choices[0].message.content.trim();
     }
 
     onProgress(80, 'Validation des données...');
