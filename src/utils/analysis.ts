@@ -216,7 +216,7 @@ export const analyzeMarketData = async (
 
     onProgress(30, 'Analyse en cours...');
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -224,16 +224,9 @@ export const analyzeMarketData = async (
       },
       body: JSON.stringify({
         model: 'text-davinci-003',
-        messages: [
-          {
-            role: 'system',
-            content: SYSTEM_PROMPT
-          },
-          {
-            role: 'user',
-            content: JSON.stringify(newsContent)
-          }
-        ],
+        prompt: `${SYSTEM_PROMPT}
+
+${JSON.stringify(newsContent)}`,
         temperature: 0.7,
         max_tokens: 2000
       })
@@ -246,7 +239,7 @@ export const analyzeMarketData = async (
     }
 
     const result = await response.json();
-    const content = result.choices[0].message.content;
+    const content = result.choices[0].text;
 
     onProgress(80, 'Validation des données...');
 
