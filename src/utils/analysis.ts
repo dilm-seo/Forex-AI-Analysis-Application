@@ -169,34 +169,7 @@ export const analyzeMarketData = async (
     const result = await response.json();
     let content = result.choices[0].message.content.trim();
 
-    // Si le contenu ne semble pas être un JSON valide, utiliser un second prompt pour le corriger
-    `,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'gpt-4',
-          messages: [
-            {
-              role: 'system',
-              content: 'Corrigez le texte suivant pour qu\'il soit un JSON strictement valide :'
-            },
-            {
-              role: 'user',
-              content: content
-            }
-          ],
-          temperature: 0.2,
-          max_tokens: 1500
-        })
-      });
-
-      if (!correctionResponse.ok) {
-        const errorDetail = await correctionResponse.text();
-        throw new Error(`Erreur lors de la requête de correction vers OpenAI: ${correctionResponse.status} - ${correctionResponse.statusText} - ${errorDetail}`);
-      }
-
-      const correctionResult = await correctionResponse.json();
-      content = correctionResult.choices[0].message.content.trim();
+    
     }
 
     onProgress(80, 'Validation des données...');
@@ -206,7 +179,7 @@ export const analyzeMarketData = async (
     try {
       parsedData = JSON.parse(content);
     } catch (error) {
-      throw new Error('La réponse de l\'API n\'est pas au format JSON valide. Assurez-vous que le modèle retourne uniquement du JSON sans aucun texte supplémentaire.');
+      throw new Error('La réponse de l\'API n\'est pas au format JSON valide. Assurez-vous que le modèle retourne uniquement du JSON.');
     }
       if (validateAnalysis(parsedData)) {
         onProgress(100, 'Analyse terminée');
