@@ -223,7 +223,7 @@ export const analyzeMarketData = async (
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-4.5-turbo',
+        model: 'gpt-4.5-preview',
         messages: [
           {
             role: 'system',
