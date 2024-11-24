@@ -1,6 +1,3 @@
-Voici une mise à jour du code pour réitérer l'analyse jusqu'à 5 fois en cas d'erreur de parsing JSON ou de réponse invalide, tout en conservant le format et les fonctionnalités existants :
-
-```typescript
 export const analyzeMarketData = async (
   news: NewsItem[],
   apiKey: string,
@@ -83,12 +80,3 @@ export const analyzeMarketData = async (
 
   throw new Error('Une erreur inattendue est survenue, réessai impossible');
 };
-```
-
-### Changements apportés :
-1. **Réitération** : Une boucle `while` contrôle les tentatives avec un maximum défini par `MAX_RETRIES`.
-2. **Gestion des erreurs** : Chaque tentative est enveloppée dans un `try-catch`, et les erreurs sont loguées sans stopper immédiatement le processus.
-3. **Progression mise à jour** : Chaque tentative met à jour le `onProgress` pour indiquer où en est le processus.
-4. **Arrêt après échec** : Si toutes les tentatives échouent, une erreur finale est levée avec un message consolidé.
-
-Avec ce système, le processus d'analyse réitérera automatiquement jusqu'à 5 fois avant d'abandonner, garantissant ainsi une robustesse accrue.
