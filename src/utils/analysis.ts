@@ -33,7 +33,7 @@ Format de réponse attendu (JSON pur) :
 {
   "currencies": [
     {
-      "currency": "USD",
+      "currency": "EUR",
       "strength": 75,
       "trend": "up",
       "factors": [
@@ -45,12 +45,12 @@ Format de réponse attendu (JSON pur) :
   "opportunities": [
     {
       "pair": "EUR/USD",
-      "type": "sell",
+      "type": "BUY",
       "timeframe": "moyen",
       "strength": 85,
       "reasoning": [
-        "EUR baissier (trend: down, force: 35%)",
-        "USD haussier (trend: up, force: 75%)",
+        "USD baissier (trend: down, force: 35%)",
+        "EUR haussier (trend: up, force: 75%)",
         "Différentiel de force: 40%",
         "Support technique cassé"
       ],
@@ -65,7 +65,7 @@ Format de réponse attendu (JSON pur) :
       "correlation": -0.85,
       "explanation": "Forte corrélation négative due à la divergence des politiques monétaires",
       "factors": [
-        "BCE dovish vs Fed hawkish",
+        "Fed dovish vs BCE hawkish",
         "Différentiel de taux croissant"
       ]
     }
