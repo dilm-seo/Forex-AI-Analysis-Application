@@ -29,6 +29,8 @@ Règles CRITIQUES pour la génération des signaux :
    - Target basé sur les niveaux techniques majeurs
    - Risque ajusté selon la volatilité de la paire
 
+Pour chaque opportunité, fournissez une analyse détaillée basée sur les données économiques réelles et actuelles. Utilisez les nouvelles données pour justifier les tendances et les signaux générés.
+
 Format de réponse attendu (JSON pur) :
 {
   "currencies": [
@@ -44,7 +46,7 @@ Format de réponse attendu (JSON pur) :
   ],
   "opportunities": [
     {
-      "pair": "GBP/USD",
+      "pair": "EUR/USD",
       "type": "sell",
       "timeframe": "moyen",
       "strength": 85,
@@ -61,7 +63,7 @@ Format de réponse attendu (JSON pur) :
   ],
   "correlations": [
     {
-      "pair": "AUD/USD",
+      "pair": "EUR/USD",
       "correlation": -0.85,
       "explanation": "Forte corrélation négative due à la divergence des politiques monétaires",
       "factors": [
@@ -232,7 +234,7 @@ export const analyzeMarketData = async (
             content: JSON.stringify(newsContent)
           }
         ],
-        temperature: 0,
+        temperature: 0.7,
         max_tokens: 2000
       })
     });
