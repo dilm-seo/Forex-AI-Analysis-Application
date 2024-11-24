@@ -1,27 +1,105 @@
 import type { Analysis, NewsItem } from '../types';
 
-const SYSTEM_PROMPT = `Vous êtes un assistant spécialisé dans l'analyse financière. Votre rôle est d'analyser les nouvelles suivantes pour générer des signaux de trading cohérents.
+const SYSTEM_PROMPT = `Vous êtes un analyste forex professionnel expérimenté. Analysez les nouvelles suivantes en utilisant une approche multi-factorielle pour générer des signaux de trading cohérents.
 
-Règles :
+Règles CRITIQUES pour la génération des signaux :
 
 1. Logique des Paires
-   - Achat (BUY) : La devise de base doit être haussière et la devise cotée baissière.
-   - Vente (SELL) : La devise de base doit être baissière et la devise cotée haussière.
+   - Une opportunité d'achat (BUY) n'est valide que si :
+     * La devise de base est haussière (UP) ET la devise cotée est baissière (DOWN)
+     * La force relative de la devise de base est significativement supérieure
+   - Une opportunité de vente (SELL) n'est valide que si :
+     * La devise de base est baissière (DOWN) ET la devise cotée est haussière (UP)
+     * La force relative de la devise cotée est significativement supérieure
+   - Les paires avec des tendances similaires ne génèrent pas de signal
 
 2. Critères de Force
-   - Différentiel minimum de 20% entre les forces.
-   - Force minimale de 60% pour la devise dominante.
+   - Différentiel minimum de 20% entre les forces des devises
+   - Force minimale de 60% pour la devise dominante
+   - Faiblesse maximale de 40% pour la devise faible
 
 3. Timeframes
-   - Court terme : Différentiel de force 20-40%
-   - Moyen terme : Différentiel de force 40-60%
-   - Long terme : Différentiel de force >60%
+   - Court terme (1-3 jours) : Différentiel de force 20-40%
+   - Moyen terme (1-2 semaines) : Différentiel de force 40-60%
+   - Long terme (2+ semaines) : Différentiel de force >60%
 
 4. Gestion du Risque
    - Ratio risque/rendement minimum de 1:2
-   - Stop loss sur le support/résistance le plus proche
+   - Stop loss basé sur le support/résistance le plus proche
+   - Target basé sur les niveaux techniques majeurs
+   - Risque ajusté selon la volatilité de la paire
 
-Retournez STRICTEMENT un objet JSON valide avec les informations demandées, sans aucun texte supplémentaire, commentaire, ou explication. Utilisez le format JSON strictement valide et rien d'autre.`;
+Format de réponse attendu (JSON pur) :
+{
+  "currencies": [
+    {
+      "currency": "USD",
+      "strength": 75,
+      "trend": "up",
+      "factors": [
+        "Hausse des taux Fed",
+        "Données économiques solides"
+      ]
+    }
+  ],
+  "opportunities": [
+    {
+      "pair": "EUR/USD",
+      "type": "sell",
+      "timeframe": "moyen",
+      "strength": 85,
+      "reasoning": [
+        "EUR baissier (trend: down, force: 35%)",
+        "USD haussier (trend: up, force: 75%)",
+        "Différentiel de force: 40%",
+        "Support technique cassé"
+      ],
+      "risk": "modéré",
+      "stopLoss": 1.0850,
+      "target": 1.0650
+    }
+  ],
+  "correlations": [
+    {
+      "pair": "EUR/USD",
+      "correlation": -0.85,
+      "explanation": "Forte corrélation négative due à la divergence des politiques monétaires",
+      "factors": [
+        "BCE dovish vs Fed hawkish",
+        "Différentiel de taux croissant"
+      ]
+    }
+  ],
+  "marketSentiment": {
+    "overall": "risk-off",
+    "confidence": 75,
+    "drivers": [
+      "Aversion au risque élevée",
+      "Volatilité en hausse"
+    ]
+  }
+}
+
+Validation des Signaux :
+
+1. Vérifiez que chaque opportunité respecte :
+   - La cohérence des tendances (haussière vs baissière)
+   - Le différentiel de force minimum
+   - La validité des niveaux techniques
+   - La logique du timeframe
+
+2. Assurez-vous que :
+   - Les corrélations sont basées sur des facteurs fondamentaux
+   - Le sentiment reflète l'ensemble des conditions
+   - Les facteurs cités sont vérifiables et actuels
+
+3. Évitez :
+   - Les signaux contradictoires
+   - Les paires avec faible liquidité
+   - Les niveaux non significatifs
+   - Les analyses non fondées
+
+Retournez UNIQUEMENT l'objet JSON, sans formatage markdown ni blocs de code.`;
 
 interface ProgressCallback {
   (value: number, message: string): void;
@@ -128,7 +206,7 @@ export const analyzeMarketData = async (
   try {
     onProgress(10, 'Préparation des données...');
 
-    const newsContent = news.slice(0, 5).map(item => ({
+    const newsContent = news.map(item => ({
       title: item.title,
       description: item.description,
       date: item.pubDate
@@ -143,7 +221,7 @@ export const analyzeMarketData = async (
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4-turbo-preview',
         messages: [
           {
             role: 'system',
@@ -155,32 +233,23 @@ export const analyzeMarketData = async (
           }
         ],
         temperature: 0.7,
-        max_tokens: 1500
+        max_tokens: 2000
       })
     });
 
     onProgress(60, 'Traitement des résultats...');
 
     if (!response.ok) {
-      const errorDetail = await response.text();
-      throw new Error(`Erreur lors de la requête vers OpenAI: ${response.status} - ${response.statusText} - ${errorDetail}`);
+      throw new Error('Erreur lors de la requête vers OpenAI');
     }
 
     const result = await response.json();
-    let content = result.choices[0].message.content.trim();
-
-    
-    }
+    const content = result.choices[0].message.content;
 
     onProgress(80, 'Validation des données...');
 
     try {
-      let parsedData;
-    try {
-      parsedData = JSON.parse(content);
-    } catch (error) {
-      throw new Error('La réponse de l\'API n\'est pas au format JSON valide. Assurez-vous que le modèle retourne uniquement du JSON.');
-    }
+      const parsedData = JSON.parse(content);
       if (validateAnalysis(parsedData)) {
         onProgress(100, 'Analyse terminée');
         return parsedData;
