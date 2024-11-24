@@ -232,7 +232,7 @@ export const analyzeMarketData = async (
             content: JSON.stringify(newsContent)
           }
         ],
-        temperature: 0.7,
+        temperature: 0.2,
         max_tokens: 2000
       })
     });
