@@ -182,7 +182,7 @@ export const analyzeMarketData = async (
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4-128k',
+          model: 'gpt-4',
           messages: [
             { role: 'system', content: SYSTEM_PROMPT },
             { role: 'user', content: JSON.stringify(newsContent) },
