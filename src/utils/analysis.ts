@@ -182,13 +182,13 @@ export const analyzeMarketData = async (
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4-turbo-preview',
+          model: 'gpt-4-128k',
           messages: [
             { role: 'system', content: SYSTEM_PROMPT },
             { role: 'user', content: JSON.stringify(newsContent) },
           ],
           temperature: 0.7,
-          max_tokens: 2000,
+          max_tokens: 4000,
         }),
       });
 
