@@ -1,6 +1,6 @@
 import type { Analysis, NewsItem } from '../types';
 
-const SYSTEM_PROMPT = Vous êtes un analyste forex professionnel expérimenté. Analysez les nouvelles suivantes en utilisant une approche multi-factorielle pour générer des signaux de trading cohérents.
+const SYSTEM_PROMPT = `Vous êtes un analyste forex professionnel expérimenté. Analysez les nouvelles suivantes en utilisant une approche multi-factorielle pour générer des signaux de trading cohérents.
 
 Règles CRITIQUES pour la génération des signaux :
 
@@ -99,7 +99,7 @@ Validation des Signaux :
    - Les niveaux non significatifs
    - Les analyses non fondées
 
-Retournez UNIQUEMENT l'objet JSON, sans formatage markdown ni blocs de code.;
+Retournez UNIQUEMENT l'objet JSON, sans formatage markdown ni blocs de code.`;
 
 interface ProgressCallback {
   (value: number, message: string): void;
@@ -122,7 +122,7 @@ const validateAnalysis = (data: any): data is Analysis => {
       !['up', 'down', 'neutral'].includes(currency.trend) ||
       !Array.isArray(currency.factors)
     ) {
-      throw new Error(Devise invalide à l'index ${index});
+      throw new Error(`Devise invalide à l'index ${index}`);
     }
   });
 
@@ -142,7 +142,7 @@ const validateAnalysis = (data: any): data is Analysis => {
       typeof opp.stopLoss !== 'number' ||
       typeof opp.target !== 'number'
     ) {
-      throw new Error(Opportunité invalide à l'index ${index});
+      throw new Error(`Opportunité invalide à l'index ${index}`);
     }
 
     // Validation de la cohérence des signaux
@@ -151,7 +151,7 @@ const validateAnalysis = (data: any): data is Analysis => {
     const quoteInfo = data.currencies.find(c => c.currency === quoteCurrency);
 
     if (!baseInfo || !quoteInfo) {
-      throw new Error(Devises non trouvées pour la paire ${opp.pair});
+      throw new Error(`Devises non trouvées pour la paire ${opp.pair}`);
     }
 
     const isValidBuy = opp.type === 'buy' && 
@@ -165,7 +165,7 @@ const validateAnalysis = (data: any): data is Analysis => {
       (quoteInfo.strength - baseInfo.strength >= 20);
 
     if (!isValidBuy && !isValidSell) {
-      throw new Error(Signal invalide pour la paire ${opp.pair}: tendances incohérentes);
+      throw new Error(`Signal invalide pour la paire ${opp.pair}: tendances incohérentes`);
     }
   });
 
@@ -181,7 +181,7 @@ const validateAnalysis = (data: any): data is Analysis => {
       typeof corr.explanation !== 'string' ||
       !Array.isArray(corr.factors)
     ) {
-      throw new Error(Corrélation invalide à l'index ${index});
+      throw new Error(`Corrélation invalide à l'index ${index}`);
     }
   });
 
@@ -203,80 +203,66 @@ export const analyzeMarketData = async (
   apiKey: string,
   onProgress: ProgressCallback
 ): Promise<Analysis> => {
-  let retryCount = 0;
-  const maxRetries = 3;
+  try {
+    onProgress(10, 'Préparation des données...');
 
-  while (retryCount < maxRetries) {
+    const newsContent = news.map(item => ({
+      title: item.title,
+      description: item.description,
+      date: item.pubDate
+    }));
+
+    onProgress(30, 'Analyse en cours...');
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'gpt-4-turbo-preview',
+        messages: [
+          {
+            role: 'system',
+            content: SYSTEM_PROMPT
+          },
+          {
+            role: 'user',
+            content: JSON.stringify(newsContent)
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 2000
+      })
+    });
+
+    onProgress(60, 'Traitement des résultats...');
+
+    if (!response.ok) {
+      throw new Error('Erreur lors de la requête vers OpenAI');
+    }
+
+    const result = await response.json();
+    const content = result.choices[0].message.content;
+
+    onProgress(80, 'Validation des données...');
+
     try {
-      onProgress(10, 'Préparation des données...');
-
-      const newsContent = news.map(item => ({
-        title: item.title,
-        description: item.description,
-        date: item.pubDate
-      }));
-
-      onProgress(30, 'Analyse en cours...');
-
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': Bearer ${apiKey},
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'gpt-4-turbo-preview',
-          messages: [
-            {
-              role: 'system',
-              content: SYSTEM_PROMPT
-            },
-            {
-              role: 'user',
-              content: JSON.stringify(newsContent)
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 2000
-        })
-      });
-
-      onProgress(60, 'Traitement des résultats...');
-
-      if (!response.ok) {
-        throw new Error('Erreur lors de la requête vers OpenAI');
-      }
-
-      const result = await response.json();
-      const content = result.choices[0].message.content;
-
-      onProgress(80, 'Validation des données...');
-
-      try {
-        const parsedData = JSON.parse(content);
-        if (validateAnalysis(parsedData)) {
-          onProgress(100, 'Analyse terminée');
-          return parsedData;
-        }
-      } catch (error) {
-        retryCount++;
-        if (retryCount >= maxRetries) {
-          throw new Error('Impossible de parser la réponse JSON après plusieurs tentatives');
-        }
-        onProgress(70, Erreur de parsing JSON, nouvelle tentative (${retryCount}/${maxRetries})...);
+      const parsedData = JSON.parse(content);
+      if (validateAnalysis(parsedData)) {
+        onProgress(100, 'Analyse terminée');
+        return parsedData;
       }
     } catch (error) {
-      if (error instanceof Error) {
-        if (retryCount >= maxRetries) {
-          throw new Error(Erreur lors de l'analyse du marché: ${error.message});
-        }
-        retryCount++;
-        onProgress(50, Erreur rencontrée, nouvelle tentative (${retryCount}/${maxRetries})...);
-      } else {
-        throw new Error('Une erreur inattendue est survenue');
-      }
+      throw new Error('Impossible de parser la réponse JSON');
     }
-  }
 
-  throw new Error('Analyse impossible après plusieurs tentatives');
+    throw new Error('Format de réponse invalide');
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Erreur lors de l'analyse du marché: ${error.message}`);
+    }
+    throw new Error('Une erreur inattendue est survenue');
+  }
 };
