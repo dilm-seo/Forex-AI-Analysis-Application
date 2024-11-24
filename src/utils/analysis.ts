@@ -44,7 +44,7 @@ Format de réponse attendu (JSON pur) :
   ],
   "opportunities": [
     {
-      "pair": "EUR/USD",
+      "pair": "GBP/USD",
       "type": "sell",
       "timeframe": "moyen",
       "strength": 85,
@@ -61,7 +61,7 @@ Format de réponse attendu (JSON pur) :
   ],
   "correlations": [
     {
-      "pair": "EUR/USD",
+      "pair": "AUD/USD",
       "correlation": -0.85,
       "explanation": "Forte corrélation négative due à la divergence des politiques monétaires",
       "factors": [
