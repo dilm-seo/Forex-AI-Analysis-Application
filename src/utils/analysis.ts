@@ -225,7 +225,7 @@ export const analyzeMarketData = async (
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: settings.model,
+          model: ${settings.model},
           messages: [
             {
               role: 'system',
