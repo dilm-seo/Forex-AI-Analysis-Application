@@ -235,14 +235,15 @@ export const analyzeMarketData = async (
           }
         ],
         temperature: 0.7,
-        max_tokens: 2000
+        max_tokens: 3000
       })
     });
 
     onProgress(60, 'Traitement des résultats...');
 
     if (!response.ok) {
-      throw new Error('Erreur lors de la requête vers OpenAI');
+      const errorDetail = await response.text();
+      throw new Error(`Erreur lors de la requête vers OpenAI: ${response.status} - ${response.statusText} - ${errorDetail}`);
     }
 
     const result = await response.json();
